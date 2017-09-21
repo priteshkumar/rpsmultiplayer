@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="UTF-8">
+  <title>RPSMULTIPLAYER</title>
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+      <script src="https://www.gstatic.com/firebasejs/3.7.1/firebase.js"></script>
+ 
+<style>
+ body{
+    background: black;
+   }
+   #pageheader{
+    margin-top:0px;
+    color:white;
+    background: #212121;
+    font-size: 50px;
+    width:100%;
+    margin-left: auto;
+    margin-right: auto;
+    min-height: 60px;
+    opacity:0.9;
+    padding-top:15px;
+    padding-bottom:15px;
+    font-size: 44px;
+    font-family: verdana;
+    color:blue;
+    font-weight: bold;
+   }
+   
+   #buttonsdiv{
+    padding-top:20px;
+    padding-bottom: 20px;
+    padding-left: 20px;
+   }
+   button{
+    margin-right:5px;
+    margin-bottom:5px;
+    background-color: lightblue;
+   }
+   form{
+    color: black;
+   }
+   #add-music{
+    background: #212121;
+    font-weight: bold;
+    border:none;
+    margin-left:0px;
+    height: 34px;
+
+   }
+  #maincontainer{
+     padding-top:50px;
+  }
+  #gifs-appear-here{
+    
+     padding-left:20px;
+   }
+   p{
+    color: white;
+   }
+   label{
+    color: white;
+   }
+   
+
+   #gif-form{
+    padding-top:20px;
+    padding-bottom: 20px;
+    width:100%;
+   }
+   #mlabel{
+    background: #212121;
+    height:36px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    margin-right: 0px;
+    font-size: 18px;
+    border-radius: 5px 5px;
+    min-width:12%;
+    text-align: center;
+    opacity:0.9;
+    font-weight: bold;
+   }
+   #geekinput{
+    width: 86%;
+    margin-right:0px;
+    padding-right:0px;
+   }
+   #music-input{
+    width:85%;
+    margin-left:0px;
+    padding-left:0px;
+   }
+   #glph{
+    margin-right:5px;
+   }
+   .glyphicon-gift{
+    font-size: 35px;
+   }
+#maincontainer{
+  padding-top:40px;
+}
+#player-form{
+  padding-bottom:50px;
+}
+</style>
+</head>
+
+<body>
+
+
+
+    <!-- Jumbotron -->
+<div class="container-full">
+  <div class="row">
+  <div class="col-xs-12 text-center">
+  <div id="header"> 
+  <h2 id="pageheader"><span class="glyphicon glyphicon-gift" id="glph" aria-hidden="true"></span>ROCK PAPER SCISSORS!!</h2>
+  </div>
+  </div>
+  </div>
+  </div>
+
+  <div class="container" id="maincontainer">
+        <div class="row">
+        <div class="col-xs-12 text-center">
+        <form class="form-inline" id="player-form">
+         <div class="form-group" id="playerinput">
+         <label for="player-input" id="mplayer"></label>
+         <input type="text" class="form-control" id="player-input" placeholder="Enter Game">
+         </div>
+          <input id="add-player" class="btn btn-primary" type="submit" value="AddPlayer">
+        </form>
+        <div class="col-xs-12 text-center hidden" id="playerdiv"></div>
+        </div>
+        </div>
+        <div class="row">
+        <div class="col-xs-4 text-center">
+        <div class="panel panel-default panel-primary">
+          <div class="panel-heading">
+            <h3 class="panel-title" id="playeraheader">Waiting for Player1</h3>
+          </div>
+          <div class="panel-body" id="panelplayera">
+          <div class="opdiv" id="rockd"><h4>ROCK</h4></div>  
+          <div class="opdiv" id="paperd"><h4>PAPER</h4></div>
+          <div class="opdiv" id="scissorsd"><h4>SCISSORS</h4></div>
+          <div class="winlossdiv hidden" id="winlosa"><h6>Wins:0 Losses:0</h6></div>
+          </div>
+          </div>
+          </div>
+          <div class="col-xs-4 text-center">
+        <div class="panel panel-default panel-primary">
+          <div class="panel-heading">
+            <h4 class="panel-title">RESULTS</h3>
+          </div>
+          <div class="panel-body" id="panelresults">
+          <div class="opdiv" id="rockd"><h4>WHO WINS</h4></div> 
+          </div>
+          </div>
+          </div>
+          <div class="col-xs-4 text-center">
+        <div class="panel panel-default panel-primary">
+          <div class="panel-heading">
+            <h4 class="panel-title" id="playerbheader">Waiting for Player2</h3>
+          </div>
+          <div class="panel-body" id="panelplayerb">
+          <div class="opdiv" id="rockd"><h4>ROCK</h4></div>  
+          <div class="opdiv" id="paperd"><h4>PAPER</h4></div>
+          <div class="opdiv" id="scissorsd"><h4>SCISSORS</h4></div>
+          <div class="winlossdiv hidden" id="winlosb"><h6>Wins:0 Losses:0</h6></div>
+          </div>
+          </div>
+          </div>
+
+ <script src="https://code.jquery.com/jquery.js"></script>
+ 
+<script>
+ // Initialize Firebase
+ 
+  // Initialize Firebase
+  var playerCount = 0;
+  var fbaseplayerCount = 0;
+  var config = {
+    apiKey: "AIzaSyDqPAaEr5OsiaI5ilGRt9TpolJkt3pwMf8",
+    authDomain: "rpsmulti-2c27a.firebaseapp.com",
+    databaseURL: "https://rpsmulti-2c27a.firebaseio.com",
+    projectId: "rpsmulti-2c27a",
+    storageBucket: "rpsmulti-2c27a.appspot.com",
+    messagingSenderId: "579965951465"
+  };
+  firebase.initializeApp(config);
+  var database = firebase.database();
+
+
+$("#add-player").on("click",function(){
+  event.preventDefault();
+  console.log("add playerclicked");
+  var name = $("#player-input").val().trim();
+  console.log(name); 
+  var  plob = {name:name,wins:0,losses:0};
+  var tempCount = fbaseplayerCount + 1;
+   $("#player-form").addClass("hidden");
+   $("#playerdiv").removeClass("hidden");
+   $("#playerdiv").css("padding-bottom","30px");
+   $("#playerdiv").append("<p>" + "Hi " + name + " You are player " + tempCount + "</p>");
+  if(fbaseplayerCount < 1){
+    var temCount = fbaseplayerCount + 1;
+   database.ref().child("Players/" + tempCount).set(plob);
+  }
+  else {
+    database.ref().child("Players/" + tempCount).set(plob);
+    database.ref().push({turns:1});
+  } 
+   //$("#playeraheader").text(name);
+   //$("#winlosa").removeClass("hidden");
+   
+  
+
+});
+
+
+
+database.ref("Players").on("child_added",function(snapshot){
+
+//tabase.ref().orderByChild("dateadded").limitToLast(1).on("child_added",function(snapshot){
+    var name = snapshot.val().name;
+    var wins = snapshot.val().wins;
+    var losses = snapshot.val().losses;
+    
+    fbaseplayerCount++;
+    console.log(name)
+    console.log(wins);
+    console.log(losses);
+    console.log(fbaseplayerCount);
+    if(fbaseplayerCount == 1){
+       $("#playeraheader").text(name);
+       $("#winlosa").removeClass("hidden");
+        
+    }
+    else {
+      $("#playerbheader").text(name);
+      $("#winlosb").removeClass("hidden");
+      
+    }
+//function(errorObject){
+//console.log("The read failed: " + errorObject.code);
+//;
+},function(errorObject){
+  console.log("read failed");
+});
+</script>
+</body>
+</html>
