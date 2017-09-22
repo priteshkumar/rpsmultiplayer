@@ -149,7 +149,7 @@
           <div class="opdiv" id="rocka" data-value="rock"><h4>ROCK</h4></div>  
           <div class="opdiv" id="papera" data-value="paper"><h4>PAPER</h4></div>
           <div class="opdiv" id="scissorsa" data-value="scissors"><h4>SCISSORS</h4></div>
-          <div class="winlossdiv hidden" id="winlosa"><h6>Wins:0 Losses:0</h6></div>
+          <div class="winlossdiv hidden" id="winlosa"><h6 id="winlosah">Wins:0 Losses:0</h6></div>
           </div>
           </div>
           </div>
@@ -159,7 +159,7 @@
             <h4 class="panel-title">RESULTS</h4>
           </div>
           <div class="panel-body" id="panelresults">
-          <div class="opdiv" id="rockd"><h4>WHO WINS</h4></div> 
+          <div class="opdiv" id="rockd"><h4 id="winner">WHO WILL WIN!!</h4></div> 
           </div>
           </div>
           </div>
@@ -172,7 +172,7 @@
           <div class="opdiv" id="rockb" data-value="rock"><h4>ROCK</h4></div>  
           <div class="opdiv" id="paperb" data-value="paper"><h4>PAPER</h4></div>
           <div class="opdiv" id="scissorsb" data-value="scissors"><h4>SCISSORS</h4></div>
-          <div class="winlossdiv hidden" id="winlosb"><h6>Wins:0 Losses:0</h6></div>
+          <div class="winlossdiv hidden" id="winlosb"><h6 id="winlosbh">Wins:0 Losses:0</h6></div>
           </div>
           </div>
           </div>
@@ -195,6 +195,12 @@
   var playeralosses = 0;
   var playerbwins = 0;
   var playerblosses = 0;
+  var gameOutcomes = {  "rockscissors":"1",
+                      "scissorspaper":"1",
+                      "paperrock":"1",
+                      "scissorsrock":"2",
+                      "paperscissors":"2",
+                      "rockpaper":"2" };
 
   var config = {
     apiKey: "AIzaSyDqPAaEr5OsiaI5ilGRt9TpolJkt3pwMf8",
@@ -225,7 +231,7 @@ $("#add-player").on("click",function(){
       $("#playeraheader").text(name);
       $("#playerdiv").append("<p>" + "Hi " + name + " You are player " + tempCount + "</p>");
   }
-  else if(tempCount == 2){
+  else if(tempCount === 2){
       playerb = true;
       playerbname = name;
       $("#playerbheader").text(name);
@@ -240,8 +246,6 @@ $("#add-player").on("click",function(){
     
   } 
    
-  
-
 });
 
 
@@ -254,13 +258,14 @@ function updatePlayerui(){
 
 
 function playeraChoicefunc(){
-  console.log("playerb choice func");
+  console.log("playera choice func");
   var playercount = 1;
   var playerchoice = $(this).attr("data-value");
   console.log(playerchoice);
 
   database.ref().child("Players/" + playercount).update({"choice":playerchoice});
   $(this).css("background","green");
+  $(this).parent().parent().css("border","1px solid blue");
   database.ref().child("turns").set({"value":2});
 
 }
@@ -274,6 +279,7 @@ function playerbChoicefunc(){
   console.log(playerchoice);
   database.ref().child("Players/" + playercount).update({"choice":playerchoice});
   $(this).css("background","green");
+  $(this).parent().parent().css("border","1px solid blue");
   //determineWinner();
   //database.ref().child("turns").set({"value":1});
 }
@@ -281,21 +287,78 @@ function playerbChoicefunc(){
 
 
 
+database.ref("Players/" + 1).on("value",function(snapshot){
+   console.log(snapshot.val());
+   playerachoice = snapshot.val().choice;
+
+},function(errorObject){
+  console.log("players child read failed")
+});
+
+
+function updateWinslosses(){
+   console.log("updating wins and losses");  
+   $("#winlosah").text("Wins: " + playerawins + " " + "Losses: " + playeralosses);
+   $("#winlosbh").text("Wins: " + playerbwins + " " + "Losses: " + playerblosses);
+   database.ref().child("Players/" + 1).update({"choice":"nothing","wins":playerawins,"losses":playeralosses});
+   database.ref().child("Players/" + 2).update({"choice":"nothing","wins":playerbwins,"losses":playerblosses});
+   
+}
+
+
+database.ref("Players/" + 2).on("value",function(snapshot){
+  console.log(snapshot.val());
+  playerbchoice = snapshot.val().choice;
+  var combinedchoice = playerachoice + playerbchoice;
+  console.log(combinedchoice);
+  if(combinedchoice == "rockscissors" || combinedchoice == "scissorspaper" || combinedchoice == "paperrock"){
+     $("#winner").html(playeraname + " wins !!");
+     if(playera == true){
+        $("#" + playerbchoice + "b").css("background","green");
+     }
+     else if(playerb == true){
+       $("#" + playerachoice + "a").css("background","green"); 
+     }
+      playerawins = playerawins + 1;
+      playerblosses = playerblosses + 1;
+      updateWinslosses();
+  }
+  else if(combinedchoice == "scissorsrock" || combinedchoice == "paperscissors" || combinedchoice == "rockpaper"){
+    $("#winner").html(playerbname + " wins !!");
+    if(playerb == true){
+       $("#" + playerachoice + "a").css("background","green");
+    } 
+    else if(playera == true){
+      $("#" + playerbchoice + "b").css("background","green");
+    }
+
+    playeralosses = playeralosses + 1;
+    playerbwins = playerbwins + 1;
+    updateWinslosses();
+
+  }
+  
+
+},function(errorObject){
+  console.log("players child read failed")
+});
+
 
 
 database.ref("Players").on("child_added",function(snapshot){
     fbaseplayerCount++;
     console.log(fbaseplayerCount);
     if(fbaseplayerCount == 1){
-
-       //$("#playeraheader").text(name);
+       playeraname = snapshot.val().name;
+       $("#playeraheader").text(snapshot.val().name);
        $("#winlosa").removeClass("hidden");
        playerawins = snapshot.val().wins;
        playeralosses = snapshot.val().losses;
        database.ref().child("Players/" + fbaseplayerCount).update({"choice":"nothing"});      
     }
     else {
-      //$("#playerbheader").text(name);
+      playerbname = snapshot.val().name;
+      $("#playerbheader").text(snapshot.val().name);
       $("#winlosb").removeClass("hidden");
       playerbwins = snapshot.val().wins;
       playerblosses = snapshot.val().losses;
@@ -310,6 +373,7 @@ database.ref("Players").on("child_added",function(snapshot){
 
 
 database.ref("turns").on("value",function(snapshot){
+  console.log("turn log");
   var turnval = snapshot.val().value;
   if(turnval == 1){
     $("#panela").css("border","5px solid green"); 
