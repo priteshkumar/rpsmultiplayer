@@ -141,14 +141,14 @@
         </div>
         <div class="row">
         <div class="col-xs-4 text-center">
-        <div class="panel panel-default panel-primary">
+        <div class="panel panel-default panel-primary" id="panela">
           <div class="panel-heading">
             <h3 class="panel-title" id="playeraheader">Waiting for Player1</h3>
           </div>
           <div class="panel-body" id="panelplayera">
-          <div class="opdiv" id="rockd"><h4>ROCK</h4></div>  
-          <div class="opdiv" id="paperd"><h4>PAPER</h4></div>
-          <div class="opdiv" id="scissorsd"><h4>SCISSORS</h4></div>
+          <div class="opdiv" id="rocka" data-value="rock"><h4>ROCK</h4></div>  
+          <div class="opdiv" id="papera" data-value="paper"><h4>PAPER</h4></div>
+          <div class="opdiv" id="scissorsa" data-value="scissors"><h4>SCISSORS</h4></div>
           <div class="winlossdiv hidden" id="winlosa"><h6>Wins:0 Losses:0</h6></div>
           </div>
           </div>
@@ -156,7 +156,7 @@
           <div class="col-xs-4 text-center">
         <div class="panel panel-default panel-primary">
           <div class="panel-heading">
-            <h4 class="panel-title">RESULTS</h3>
+            <h4 class="panel-title">RESULTS</h4>
           </div>
           <div class="panel-body" id="panelresults">
           <div class="opdiv" id="rockd"><h4>WHO WINS</h4></div> 
@@ -164,14 +164,14 @@
           </div>
           </div>
           <div class="col-xs-4 text-center">
-        <div class="panel panel-default panel-primary">
+        <div class="panel panel-default panel-primary" id="panelb">
           <div class="panel-heading">
             <h4 class="panel-title" id="playerbheader">Waiting for Player2</h3>
           </div>
           <div class="panel-body" id="panelplayerb">
-          <div class="opdiv" id="rockd"><h4>ROCK</h4></div>  
-          <div class="opdiv" id="paperd"><h4>PAPER</h4></div>
-          <div class="opdiv" id="scissorsd"><h4>SCISSORS</h4></div>
+          <div class="opdiv" id="rockb" data-value="rock"><h4>ROCK</h4></div>  
+          <div class="opdiv" id="paperb" data-value="paper"><h4>PAPER</h4></div>
+          <div class="opdiv" id="scissorsb" data-value="scissors"><h4>SCISSORS</h4></div>
           <div class="winlossdiv hidden" id="winlosb"><h6>Wins:0 Losses:0</h6></div>
           </div>
           </div>
@@ -184,7 +184,18 @@
  
   // Initialize Firebase
   var playerCount = 0;
+  var playeraname = "";
+  var playerbname = "";
   var fbaseplayerCount = 0;
+  var playera = false;
+  var playerb = false;
+  var playerachoice = null;
+  var playerbchoice = null;
+  var playerawins = 0;
+  var playeralosses = 0;
+  var playerbwins = 0;
+  var playerblosses = 0;
+
   var config = {
     apiKey: "AIzaSyDqPAaEr5OsiaI5ilGRt9TpolJkt3pwMf8",
     authDomain: "rpsmulti-2c27a.firebaseapp.com",
@@ -204,20 +215,30 @@ $("#add-player").on("click",function(){
   console.log(name); 
   var  plob = {name:name,wins:0,losses:0};
   var tempCount = fbaseplayerCount + 1;
-   $("#player-form").addClass("hidden");
+  $("#player-form").addClass("hidden");
    $("#playerdiv").removeClass("hidden");
    $("#playerdiv").css("padding-bottom","30px");
-   $("#playerdiv").append("<p>" + "Hi " + name + " You are player " + tempCount + "</p>");
-  if(fbaseplayerCount < 1){
-    var temCount = fbaseplayerCount + 1;
-   database.ref().child("Players/" + tempCount).set(plob);
+  
+  if(tempCount === 1){
+      playera = true;
+      playeraname = name;
+      $("#playeraheader").text(name);
+      $("#playerdiv").append("<p>" + "Hi " + name + " You are player " + tempCount + "</p>");
   }
+  else if(tempCount == 2){
+      playerb = true;
+      playerbname = name;
+      $("#playerbheader").text(name);
+      $("#playerdiv").append("<p>" + "Hi " + name + " You are player " + tempCount + "</p>");
+  }
+  
+  if(fbaseplayerCount < 1){
+   database.ref().child("Players/" + tempCount).set(plob);
+  } 
   else {
     database.ref().child("Players/" + tempCount).set(plob);
-    database.ref().push({turns:1});
+    
   } 
-   //$("#playeraheader").text(name);
-   //$("#winlosa").removeClass("hidden");
    
   
 
@@ -225,34 +246,102 @@ $("#add-player").on("click",function(){
 
 
 
-database.ref("Players").on("child_added",function(snapshot){
 
-//tabase.ref().orderByChild("dateadded").limitToLast(1).on("child_added",function(snapshot){
-    var name = snapshot.val().name;
-    var wins = snapshot.val().wins;
-    var losses = snapshot.val().losses;
-    
+function updatePlayerui(){
+  console.log("updating playerui");
+}
+
+
+
+function playeraChoicefunc(){
+  console.log("playerb choice func");
+  var playercount = 1;
+  var playerchoice = $(this).attr("data-value");
+  console.log(playerchoice);
+
+  database.ref().child("Players/" + playercount).update({"choice":playerchoice});
+  $(this).css("background","green");
+  database.ref().child("turns").set({"value":2});
+
+}
+
+
+
+function playerbChoicefunc(){
+  console.log("playerb choice func");
+  var playercount = 2;
+  var playerchoice  = $(this).attr("data-value");
+  console.log(playerchoice);
+  database.ref().child("Players/" + playercount).update({"choice":playerchoice});
+  $(this).css("background","green");
+  //determineWinner();
+  //database.ref().child("turns").set({"value":1});
+}
+
+
+
+
+
+
+database.ref("Players").on("child_added",function(snapshot){
     fbaseplayerCount++;
-    console.log(name)
-    console.log(wins);
-    console.log(losses);
     console.log(fbaseplayerCount);
     if(fbaseplayerCount == 1){
-       $("#playeraheader").text(name);
+
+       //$("#playeraheader").text(name);
        $("#winlosa").removeClass("hidden");
-        
+       playerawins = snapshot.val().wins;
+       playeralosses = snapshot.val().losses;
+       database.ref().child("Players/" + fbaseplayerCount).update({"choice":"nothing"});      
     }
     else {
-      $("#playerbheader").text(name);
+      //$("#playerbheader").text(name);
       $("#winlosb").removeClass("hidden");
-      
+      playerbwins = snapshot.val().wins;
+      playerblosses = snapshot.val().losses;
+      database.ref().child("Players/" + fbaseplayerCount).update({"choice":"nothing"}); 
+      updatePlayerui();
+      database.ref().child("turns").set({"value":1});
     }
-//function(errorObject){
-//console.log("The read failed: " + errorObject.code);
-//;
+
 },function(errorObject){
   console.log("read failed");
 });
+
+
+database.ref("turns").on("value",function(snapshot){
+  var turnval = snapshot.val().value;
+  if(turnval == 1){
+    $("#panela").css("border","5px solid green"); 
+   if(playera == true){
+     $("#playerdiv").append("<p>" + "Your turn" + "</p>");
+     $("#panelplayera .opdiv").css("font-weight","bold");
+     $("#panelplayera .opdiv").css("background","orange");
+     $("#panelplayera .opdiv").bind("click",playeraChoicefunc);
+     
+   }
+   else if(playerb == true){
+     $("#playerdiv").append("<p>" + "player1's turn" + "</p>");
+   }
+  }
+  else if(turnval == 2){
+    $("#panelb").css("border","5px solid green");
+    if(playera == true){
+       $("#playerdiv").append("<p>" + "player2's turn" + "</p>");
+    } 
+    else if(playerb == true){
+       $("#playerdiv").append("<p>" + "Your turn" + "</p>");
+       $("#panelplayerb .opdiv").css("font-weight","bold");
+       $("#panelplayerb .opdiv").css("background","orange");
+       $("#panelplayerb .opdiv").bind("click",playerbChoicefunc);
+     
+    }
+  }
+},function(errorObject){
+  console.log("read failed for turns");
+});
+
+
 </script>
 </body>
 </html>
