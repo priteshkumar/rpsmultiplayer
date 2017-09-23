@@ -183,6 +183,7 @@
  // Initialize Firebase
  
   // Initialize Firebase
+  
   var playerCount = 0;
   var playeraname = "";
   var playerbname = "";
@@ -195,12 +196,7 @@
   var playeralosses = 0;
   var playerbwins = 0;
   var playerblosses = 0;
-  var gameOutcomes = {  "rockscissors":"1",
-                      "scissorspaper":"1",
-                      "paperrock":"1",
-                      "scissorsrock":"2",
-                      "paperscissors":"2",
-                      "rockpaper":"2" };
+  var timeId = null;
 
   var config = {
     apiKey: "AIzaSyDqPAaEr5OsiaI5ilGRt9TpolJkt3pwMf8",
@@ -213,10 +209,101 @@
   firebase.initializeApp(config);
   var database = firebase.database();
 
+  var currentplayer = sessionStorage.getItem("currentplayer");
+  console.log(currentplayer);
+  var playerCount = sessionStorage.getItem("playercount");
+  console.log(playerCount);
+  if(currentplayer != undefined || currentplayer != null){
+    database.ref().child("Players/" +currentplayer).remove();
+  
+  }
+
+
+
+function updatePlayerui(){
+  console.log("updating playerui");
+ if(fbaseplayerCount == 1){
+  if(playera == true){
+  $("#player-form").addClass("hidden");
+   $("#playerdiv").removeClass("hidden");
+   $("#playerdiv").css("padding-bottom","30px");
+   $("#playeraheader").text(playeraname);
+   $("#playerdiv").empty();
+   $("#playerdiv").append("<p>" + "Hi " + playeraname + " You are player " + "1" + "</p>");
+   $("#playerbheader").html("Waiting for Player2");
+   $("#winlosbh").text("Wins: " + "0"+ " " + "Losses: " + "0");
+
+  }
+  else if(playerb == true){
+    $("#player-form").addClass("hidden");
+   $("#playerdiv").removeClass("hidden");
+   $("#playerdiv").css("padding-bottom","30px");
+   $("#playeraheader").text(playerbname);
+   $("#playerdiv").empty();
+   $("#playerdiv").append("<p>" + "Hi " + playerbname + " You are player " + "1" + "</p>");
+   $("#playerbheader").html("Waiting for Player2");
+   playera = true;
+   playerb = false;
+   playeraname = playerbname;
+   playerawins = playerbwins;
+   playeralosses = playerblosses;
+    $("#winlosah").text("Wins: "  + playerbwins + "Losses: " + playerblosses);
+    $("#winlosbh").text("Wins: " + "0"+ " " + "Losses: " + "0");
+  }
+
+ database.ref().child("Players/" + 1).once("value",function(snapshot){
+  console.log("logging saved player stats");
+  var playerwins = snapshot.val().wins;
+  var playerlosses = snapshot.val().losses;
+  console.log(playerwins);
+  console.log(playerlosses);
+ },function(errorObject){
+  console.log("read failed");
+ });
+
+ console.log("set borders to blue");
+ $("#panela").css("border","1px solid blue");
+ $("#panelb").css("border","1px solid blue");
+ $("#panelplayera .opdiv").css("background","white");
+ $("#panelplayerb .opdiv").css("background","white");
+}
+  else{
+      console.log("no update needed");
+  }
+
+}
+
+
+database.ref("Players").on("child_removed",function(snapshot){
+    console.log("child removed");
+    console.log(snapshot.val());
+    fbaseplayerCount = sessionStorage.getItem("playercount") -1;
+    sessionStorage.setItem("playercount",fbaseplayerCount);
+    console.log(fbaseplayerCount);
+    if(fbaseplayerCount == 1){
+      console.log("remove turns entry");
+       database.ref().child("turns").remove();
+       var playerkey = snapshot.val().key;
+       var playerremoved = snapshot.val().name;
+       updatePlayerui();  
+    }
+    else {
+          console.log("all players removed");
+          updatePlayerui();
+        }
+
+},function(errorObject){
+  console.log("read failed");
+});
+
+
+
+
 
 $("#add-player").on("click",function(){
   event.preventDefault();
   console.log("add playerclicked");
+  if(fbaseplayerCount < 2){
   var name = $("#player-input").val().trim();
   console.log(name); 
   var  plob = {name:name,wins:0,losses:0};
@@ -244,16 +331,11 @@ $("#add-player").on("click",function(){
   else {
     database.ref().child("Players/" + tempCount).set(plob);
     
-  } 
-   
+  }
+  sessionStorage.setItem('currentplayer', tempCount); 
+ }  
 });
 
-
-
-
-function updatePlayerui(){
-  console.log("updating playerui");
-}
 
 
 
@@ -280,8 +362,7 @@ function playerbChoicefunc(){
   database.ref().child("Players/" + playercount).update({"choice":playerchoice});
   $(this).css("background","green");
   $(this).parent().parent().css("border","1px solid blue");
-  //determineWinner();
-  //database.ref().child("turns").set({"value":1});
+  
 }
 
 
@@ -296,13 +377,20 @@ database.ref("Players/" + 1).on("value",function(snapshot){
 });
 
 
+function prepareNextRun(){
+  clearTimeout(timeId);
+  $("#winner").html("WHO WILL WIN!!");
+  database.ref().child("turns").set({"value":1});
+}
+
+
 function updateWinslosses(){
    console.log("updating wins and losses");  
    $("#winlosah").text("Wins: " + playerawins + " " + "Losses: " + playeralosses);
    $("#winlosbh").text("Wins: " + playerbwins + " " + "Losses: " + playerblosses);
    database.ref().child("Players/" + 1).update({"choice":"nothing","wins":playerawins,"losses":playeralosses});
    database.ref().child("Players/" + 2).update({"choice":"nothing","wins":playerbwins,"losses":playerblosses});
-   
+   timeId = setTimeout(prepareNextRun,3000);
 }
 
 
@@ -315,9 +403,11 @@ database.ref("Players/" + 2).on("value",function(snapshot){
      $("#winner").html(playeraname + " wins !!");
      if(playera == true){
         $("#" + playerbchoice + "b").css("background","green");
+        $("#panelb").css("border","1px solid blue");
      }
      else if(playerb == true){
-       $("#" + playerachoice + "a").css("background","green"); 
+       $("#" + playerachoice + "a").css("background","green");
+        $("#panela").css("border","1px solid blue");  
      }
       playerawins = playerawins + 1;
       playerblosses = playerblosses + 1;
@@ -327,9 +417,11 @@ database.ref("Players/" + 2).on("value",function(snapshot){
     $("#winner").html(playerbname + " wins !!");
     if(playerb == true){
        $("#" + playerachoice + "a").css("background","green");
+        $("#panela").css("border","1px solid blue");
     } 
     else if(playera == true){
       $("#" + playerbchoice + "b").css("background","green");
+       $("#panelb").css("border","1px solid blue");
     }
 
     playeralosses = playeralosses + 1;
@@ -347,6 +439,7 @@ database.ref("Players/" + 2).on("value",function(snapshot){
 
 database.ref("Players").on("child_added",function(snapshot){
     fbaseplayerCount++;
+sessionStorage.setItem("playercount",fbaseplayerCount);
     console.log(fbaseplayerCount);
     if(fbaseplayerCount == 1){
        playeraname = snapshot.val().name;
@@ -376,27 +469,43 @@ database.ref("turns").on("value",function(snapshot){
   console.log("turn log");
   var turnval = snapshot.val().value;
   if(turnval == 1){
-    $("#panela").css("border","5px solid green"); 
+    $("#panela").css("border","5px solid green");
+     $("#panelb").css("border","1px solid blue");
    if(playera == true){
-     $("#playerdiv").append("<p>" + "Your turn" + "</p>");
+     $("#playerdiv").empty();
+     $("#playerdiv").append("<p>" + "Hi " + playeraname + " You are player " + "1" + "</p>");
+     $("#playerdiv").append("<p>" + "Your Turn" + "</p>");
      $("#panelplayera .opdiv").css("font-weight","bold");
      $("#panelplayera .opdiv").css("background","orange");
      $("#panelplayera .opdiv").bind("click",playeraChoicefunc);
+     $("#panelplayerb .opdiv").css("background","white");
      
    }
    else if(playerb == true){
-     $("#playerdiv").append("<p>" + "player1's turn" + "</p>");
+     $("#playerdiv").empty();
+     $("#playerdiv").append("<p>" + "Hi " + playerbname + " You are player " + "2" + "</p>");
+     $("#playerdiv").append("<p>" + playeraname + " turn" + "</p>");
+     $("#panelplayera .opdiv").css("background","white");
+     $("#panelplayerb .opdiv").css("background","white");
    }
   }
   else if(turnval == 2){
+     $("#panela").css("border","1px solid blue");
     $("#panelb").css("border","5px solid green");
     if(playera == true){
-       $("#playerdiv").append("<p>" + "player2's turn" + "</p>");
+
+    $("#playerdiv").empty();
+     $("#playerdiv").append("<p>" + "Hi " + playeraname + " You are player " + "1" + "</p>");
+     $("#playerdiv").append("<p>" + playerbname + " turn" + "</p>");
+     $("#panelplayerb .opdiv").css("background","white");
     } 
     else if(playerb == true){
-       $("#playerdiv").append("<p>" + "Your turn" + "</p>");
+      $("#playerdiv").empty();
+      $("#playerdiv").append("<p>" + "Hi " + playerbname + " You are player " + "2" + "</p>");
+      $("#playerdiv").append("<p>" + "Your Turn" + "</p>");
        $("#panelplayerb .opdiv").css("font-weight","bold");
        $("#panelplayerb .opdiv").css("background","orange");
+       $("#panelplayera .opdiv").css("background","white");
        $("#panelplayerb .opdiv").bind("click",playerbChoicefunc);
      
     }
