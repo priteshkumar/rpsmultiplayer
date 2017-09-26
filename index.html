@@ -12,23 +12,24 @@
  
 <style>
  body{
-    background: black;
+    background:#B39DDB;
+
    }
    #pageheader{
     margin-top:0px;
     color:white;
-    background: #212121;
-    font-size: 50px;
+    background:#311B92
+
+    ;
     width:100%;
     margin-left: auto;
     margin-right: auto;
-    min-height: 60px;
+    min-height: 50px;
     opacity:0.9;
+    font-size:32px;
     padding-top:15px;
     padding-bottom:15px;
-    font-size: 44px;
     font-family: verdana;
-    color:blue;
     font-weight: bold;
    }
    
@@ -108,6 +109,14 @@
 #player-form{
   padding-bottom:50px;
 }
+.btn{
+  background: #304FFE;
+  color:white;
+}
+.panel-primary > .panel-heading{
+  background: #304FFE;
+  color:white;
+}
 </style>
 </head>
 
@@ -120,7 +129,7 @@
   <div class="row">
   <div class="col-xs-12 text-center">
   <div id="header"> 
-  <h2 id="pageheader"><span class="glyphicon glyphicon-scissors" id="glph" aria-hidden="true"></span>ROCK PAPER SCISSORS!!</h2>
+  <h4 id="pageheader"><span class="glyphicon glyphicon-scissors" id="glph" aria-hidden="true"></span><i>ROCK PAPER SCISSORS!!<i></h4>
   </div>
   </div>
   </div>
@@ -134,7 +143,7 @@
          <label for="player-input" id="mplayer"></label>
          <input type="text" class="form-control" id="player-input" placeholder="Enter Game">
          </div>
-          <input id="add-player" class="btn btn-primary" type="submit" value="AddPlayer">
+          <input id="add-player" class="btn" type="submit" value="AddPlayer">
         </form>
         <div class="col-xs-12 text-center hidden" id="playerdiv"></div>
         </div>
@@ -142,7 +151,7 @@
         <div class="row">
         <div class="col-xs-4 text-center">
         <div class="panel panel-default panel-primary" id="panela">
-          <div class="panel-heading">
+          <div class="panel-heading headpan">
             <h3 class="panel-title" id="playeraheader">Waiting for Player1</h3>
           </div>
           <div class="panel-body" id="panelplayera">
@@ -155,7 +164,7 @@
           </div>
           <div class="col-xs-4 text-center">
         <div class="panel panel-default panel-primary">
-          <div class="panel-heading">
+          <div class="panel-heading headpan">
             <h4 class="panel-title">Results</h4>
           </div>
           <div class="panel-body" id="panelresults">
@@ -165,7 +174,7 @@
           </div>
           <div class="col-xs-4 text-center">
         <div class="panel panel-default panel-primary" id="panelb">
-          <div class="panel-heading">
+          <div class="panel-heading headpan">
             <h4 class="panel-title" id="playerbheader">Waiting for Player2</h3>
           </div>
           <div class="panel-body" id="panelplayerb">
